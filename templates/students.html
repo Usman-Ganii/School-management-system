@@ -1,0 +1,62 @@
+{% extends "base.html" %}{% block title %}Students | School Desk{% endblock %}{% block page_heading %}Students{%
+endblock %}
+{% block content %}<section class="page-intro">
+    <div><span class="eyebrow">STUDENT DIRECTORY</span>
+        <h1>All students</h1>
+        <p>Find, update, and prepare documents for student records.</p>
+    </div><a class="button button-primary" href="/add-student">＋ Add student</a>
+</section>
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Student records</h2>
+            <p>{{ students|length }} record(s) in your directory</p>
+        </div><input id="studentSearch" class="search-box" type="search"
+            placeholder="Search name, ID, class or roll no.">
+    </div>
+    <div class="table-wrap">
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>STUDENT</th>
+                    <th>STUDENT ID</th>
+                    <th>CLASS</th>
+                    <th>ROLL NO.</th>
+                    <th>DATE OF BIRTH</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}<tr>
+                    <td>
+                        <div class="student-name">{% if student.photo %}<img class="student-avatar student-avatar-photo"
+                                src="{{ url_for('static', filename=student.photo) }}"
+                                alt="Photo of {{ student.name }}">{% else %}<div class="student-avatar">{{
+                                student.name[:1]|upper }}</div>{% endif %}<strong>{{ student.name }}</strong></div>
+                    </td>
+                    <td><span class="id-pill">STU-{{ "%04d"|format(student.id) }}</span></td>
+                    <td>Class {{ student.student_class }}</td>
+                    <td>{{ student.roll_number or "—" }}</td>
+                    <td>{{ student.date_of_birth or "—" }}</td>
+                    <td>
+                        <div class="action-links"><a href="/id-card/{{ student.id }}">ID card</a><a
+                                href="/transfer-certificate/{{ student.id }}">TC</a><a
+                                href="/edit-student/{{ student.id }}">Edit</a>
+                            <form method="POST" action="/delete-student/{{ student.id }}"
+                                onsubmit="return confirm('Delete this student record?');"><button class="delete-link"
+                                    type="submit">Delete</button></form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}<tr>
+                    <td colspan="6">
+                        <div class="empty-state"><strong>No student records found</strong>
+                            <p>Add your first student to get started.</p><a class="button button-primary"
+                                href="/add-student">Add student</a>
+                        </div>
+                    </td>
+                </tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>{% endblock %}

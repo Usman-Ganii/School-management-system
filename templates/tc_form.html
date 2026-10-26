@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% block title %}Transfer Certificate | School Desk{% endblock %}{% block page_heading
+%}Transfer certificate{% endblock %}
+{% block content %}<section class="page-intro">
+    <div><span class="eyebrow">STUDENT DOCUMENTS</span>
+        <h1>Prepare a transfer certificate</h1>
+        <p>Check the student's details and fill in the certificate information.</p>
+    </div><a class="button button-outline" href="/students">← Back to students</a>
+</section>
+<section class="panel form-panel">
+    <div class="student-summary">
+        <div class="student-avatar large-avatar">{{ student.name[:1]|upper }}</div>
+        <div>
+            <h2>{{ student.name }}</h2>
+            <p>STU-{{ "%04d"|format(student.id) }} · Class {{ student.student_class }} · Roll {{ student.roll_number or
+                "—" }}</p>
+        </div>
+    </div>
+    <form method="POST" action="/transfer-certificate-pdf/{{ student.id }}">
+        <div class="form-grid">
+            <div class="form-field"><label>Conduct</label><select name="conduct">
+                    <option>Good</option>
+                    <option>Very Good</option>
+                    <option>Satisfactory</option>
+                </select></div>
+            <div class="form-field"><label>Last date of attendance</label><input type="date" name="last_date"></div>
+            <div class="form-field full-field"><label>Reason for leaving</label><input type="text" name="reason"
+                    placeholder="e.g. Parent transfer"></div>
+            <div class="form-field full-field"><label>Remarks</label><textarea name="remarks" rows="3"
+                    placeholder="Additional notes, if any"></textarea></div>
+        </div>
+        <div class="form-actions"><a class="button button-outline" href="/students">Cancel</a><button
+                class="button button-primary" type="submit">Download TC PDF</button></div>
+    </form>
+</section>
+<p class="notice">This is a sample certificate layout. Check your school's official format and applicable rules before
+    issuing official certificates.</p>{% endblock %}

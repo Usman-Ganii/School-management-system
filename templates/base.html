@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}School Desk{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">S</div>
+      <div><strong>School Desk</strong><small>ADMINISTRATION</small></div>
+    </div>
+    <p class="nav-label">WORKSPACE</p>
+    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">▦ <span>Dashboard</span></a>
+    <a class="nav-link {% if request.path.startswith('/students') or request.path.startswith('/add-student') or request.path.startswith('/edit-student') %}active{% endif %}"
+      href="/students">♙ <span>Students</span></a>
+    <a class="nav-link" href="/students">▣ <span>ID Cards</span></a>
+    <a class="nav-link" href="/students">▤ <span>Transfer Certificates</span></a>
+    <p class="nav-label settings-label">PREFERENCES</p>
+    <a class="nav-link {% if request.path == '/settings' %}active{% endif %}" href="/settings">⚙ <span>School
+        Settings</span></a>
+    <div class="sidebar-footer">
+      <div class="footer-dot"></div>
+      <div><strong>Local School App</strong><small>Student services</small></div>
+    </div>
+  </aside>
+  <main class="main-area">
+    <header class="topbar">
+      <div><span class="topbar-kicker">SCHOOL ADMINISTRATION</span>
+        <h2>{% block page_heading %}Dashboard{% endblock %}</h2>
+      </div>
+      <div class="user-chip">
+        <div class="user-avatar">A</div>
+        <div><strong>Administrator</strong><small>School Office</small></div>
+      </div>
+    </header>
+    {% block content %}{% endblock %}
+    <footer class="page-footer">School Desk <span>•</span> Student Administration</footer>
+  </main>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

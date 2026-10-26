@@ -1,0 +1,39 @@
+{% extends "base.html" %}{% block title %}School Settings | School Desk{% endblock %}{% block page_heading %}School
+settings{% endblock %}
+{% block content %}<section class="page-intro">
+    <div><span class="eyebrow">SCHOOL PROFILE</span>
+        <h1>School details</h1>
+        <p>These details appear on student documents.</p>
+    </div>
+</section>
+<section class="panel form-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>School information</h2>
+            <p>Use your school's official details when ready.</p>
+        </div>
+    </div>
+    <form method="POST" enctype="multipart/form-data" action="/settings">
+        <div class="form-grid">
+            <div class="form-field full-field"><label>School name *</label><input type="text" name="name"
+                    value="{{ school.name }}" required></div>
+            <div class="form-field"><label>Available classes (comma-separated)</label><input type="text" name="classes"
+                    value="{{ school.classes or '8,9,10' }}" placeholder="8,9,10,11,12"><small
+                    class="field-help">Example: 8,9,10,11,12. Add future classes here.</small></div>
+            <div class="form-field"><label>School logo (optional)</label><input type="file" name="logo"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"><small class="field-help">JPG, PNG,
+                    or WEBP.</small>{% if school.logo %}<div class="current-photo"><img
+                        src="{{ url_for('static', filename=school.logo) }}" alt="School logo"><span>Current logo</span>
+                </div>{% endif %}</div>
+            <div class="form-field full-field"><label>School address</label><textarea name="address"
+                    rows="3">{{ school.address }}</textarea></div>
+            <div class="form-field"><label>Phone number</label><input type="text" name="phone"
+                    value="{{ school.phone }}"></div>
+            <div class="form-field"><label>Email address</label><input type="email" name="email"
+                    value="{{ school.email }}"></div>
+            <div class="form-field full-field"><label>Principal's name</label><input type="text" name="principal"
+                    value="{{ school.principal }}"></div>
+        </div>
+        <div class="form-actions"><button class="button button-primary" type="submit">Save school details</button></div>
+    </form>
+</section>{% endblock %}

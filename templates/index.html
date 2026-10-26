@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | School Desk{% endblock %}{% block page_heading %}Dashboard{% endblock %}
+{% block content %}
+<section class="welcome-banner">
+    <div><span class="eyebrow">YOUR SCHOOL AT A GLANCE</span>
+        <h1>Welcome back, Admin.</h1>
+        <p>Keep student records and school documents organised in one place.</p>
+    </div><a class="button button-light" href="/add-student">＋ Add a student</a>
+    <div class="banner-shape"></div>
+</section>
+<section class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-top"><span class="stat-icon icon-blue">♙</span><span class="stat-tag">RECORDS</span></div>
+        <p>Total students</p>
+        <h3>{{ total_students }}</h3><small>Saved in your student directory</small>
+    </div>
+    <div class="stat-card">
+        <div class="stat-top"><span class="stat-icon icon-green">▣</span><span class="stat-tag">DOCUMENTS</span></div>
+        <p>ID cards</p>
+        <h3>Ready to create</h3><small>Open a student record to make a card</small>
+    </div>
+    <div class="stat-card">
+        <div class="stat-top"><span class="stat-icon icon-orange">▤</span><span class="stat-tag">DOCUMENTS</span></div>
+        <p>Transfer certificates</p>
+        <h3>Ready to create</h3><small>Prepare a certificate for a student</small>
+    </div>
+</section>
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Recently added students</h2>
+            <p>A quick look at your latest student records.</p>
+        </div><a class="text-link" href="/students">View all students →</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>STUDENT</th>
+                    <th>STUDENT ID</th>
+                    <th>CLASS</th>
+                    <th>ROLL NO.</th>
+                    <th>QUICK ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}<tr>
+                    <td>
+                        <div class="student-name">{% if student.photo %}<img class="student-avatar student-avatar-photo"
+                                src="{{ url_for('static', filename=student.photo) }}"
+                                alt="Photo of {{ student.name }}">{% else %}<div class="student-avatar">{{
+                                student.name[:1]|upper }}</div>{% endif %}<strong>{{ student.name }}</strong></div>
+                    </td>
+                    <td><span class="id-pill">STU-{{ "%04d"|format(student.id) }}</span></td>
+                    <td>Class {{ student.student_class }}</td>
+                    <td>{{ student.roll_number or "—" }}</td>
+                    <td><a class="small-link" href="/id-card/{{ student.id }}">ID card</a></td>
+                </tr>
+                {% else %}<tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="empty-icon">♙</div><strong>No students yet</strong>
+                            <p>Add a student to begin building your directory.</p><a class="button button-primary"
+                                href="/add-student">Add first student</a>
+                        </div>
+                    </td>
+                </tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

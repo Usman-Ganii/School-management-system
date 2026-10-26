@@ -1,0 +1,46 @@
+{% extends "base.html" %}{% block title %}{% if student %}Edit{% else %}Add{% endif %} Student | School Desk{% endblock
+%}{% block page_heading %}{% if student %}Edit student{% else %}Add student{% endif %}{% endblock %}
+{% block content %}<section class="page-intro">
+    <div><span class="eyebrow">STUDENT DIRECTORY</span>
+        <h1>{% if student %}Update student details{% else %}New student record{% endif %}</h1>
+        <p>Fill in the information below. You can update it later.</p>
+    </div><a class="button button-outline" href="/students">← Back to students</a>
+</section>
+<section class="panel form-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Basic information</h2>
+            <p>Fields marked with * are required.</p>
+        </div>
+    </div>
+    <form method="POST" enctype="multipart/form-data"
+        action="{% if student %}/edit-student/{{ student.id }}{% else %}/add-student{% endif %}">
+        <div class="form-grid">
+            <div class="form-field"><label>Student full name *</label><input type="text" name="name"
+                    value="{{ student.name if student else '' }}" placeholder="e.g. Ayesha Sharma" required></div>
+            <div class="form-field"><label>Father's / Guardian's name</label><input type="text" name="father_name"
+                    value="{{ student.father_name if student else '' }}" placeholder="Enter guardian's name"></div>
+            <div class="form-field"><label>Class *</label><select name="student_class" required>
+                    <option value="">Choose class</option>{% for class_name in classes %}<option
+                        value="{{ class_name }}" {% if student and student.student_class==class_name %}selected{% endif
+                        %}>Class {{ class_name }}</option>{% endfor %}
+                </select></div>
+            <div class="form-field"><label>Roll number</label><input type="text" name="roll_number"
+                    value="{{ student.roll_number if student else '' }}" placeholder="e.g. 08"></div>
+            <div class="form-field"><label>Date of birth</label><input type="date" name="date_of_birth"
+                    value="{{ student.date_of_birth if student else '' }}"></div>
+            <div class="form-field"><label>Admission date</label><input type="date" name="admission_date"
+                    value="{{ student.admission_date if student else '' }}"></div>
+            <div class="form-field full-field"><label>Student photo (optional)</label><input type="file" name="photo"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"><small class="field-help">Choose JPG,
+                    PNG, or WEBP. Maximum size: 3 MB.</small>{% if student and student.photo %}<div
+                    class="current-photo"><img src="{{ url_for('static', filename=student.photo) }}"
+                        alt="Current student photo"><span>Current photo — choose another file to replace it.</span>
+                </div>{% endif %}</div>
+            <div class="form-field full-field"><label>Home address</label><textarea name="address" rows="3"
+                    placeholder="Enter address">{{ student.address if student else '' }}</textarea></div>
+        </div>
+        <div class="form-actions"><a class="button button-outline" href="/students">Cancel</a><button
+                class="button button-primary" type="submit">Save student record</button></div>
+    </form>
+</section>{% endblock %}
