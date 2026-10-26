@@ -1,31 +1,112 @@
-{% extends "base.html" %}{% block title %}Student ID Card | School Desk{% endblock %}{% block page_heading %}Student ID
-card{% endblock %}
-{% block content %}<section class="page-intro">
-    <div><span class="eyebrow">STUDENT DOCUMENTS</span>
-        <h1>ID card preview</h1>
-        <p>Review this sample card before downloading it.</p>
-    </div><a class="button button-outline" href="/students">← Back to students</a>
+{% extends "base.html" %}
+
+{% block title %}Student ID Card | School Desk{% endblock %}
+{% block page_heading %}Student ID Card{% endblock %}
+
+{% block content %}
+<section class="page-intro id-page-intro">
+    <div>
+        <span class="eyebrow">STUDENT DOCUMENTS</span>
+        <h1>ID Card Preview</h1>
+        <p>Review the student's details before printing or downloading.</p>
+    </div>
+
+    <a class="button button-outline" href="/students">
+        &larr; Back to Students
+    </a>
 </section>
-<section class="panel preview-panel">
+
+<section class="panel preview-panel id-preview-panel">
+
     <div class="id-card-preview">
-        <div class="id-card-top">{% if school.logo %}<img class="mini-logo" style="object-fit:contain"
-                src="{{ url_for('static', filename=school.logo) }}" alt="School logo">{% else %}<div class="mini-logo">S
-            </div>{% endif %}<div><strong>{{ school.name }}</strong><small>{{ school.address }}</small></div>
-        </div>
-        <div class="id-card-body">{% if student.photo %}<img class="id-photo-preview"
-                src="{{ url_for('static', filename=student.photo) }}" alt="Photo of {{ student.name }}">{% else %}<div
-                class="photo-placeholder">{{ student.name[:1]|upper }}</div>{% endif %}<div class="id-details"><span
-                    class="card-label">STUDENT ID CARD</span>
-                <h2>{{ student.name }}</h2>
-                <p><strong>Student ID:</strong> STU-{{ "%04d"|format(student.id) }}</p>
-                <p><strong>Class:</strong> {{ student.student_class }}</p>
-                <p><strong>Roll No.:</strong> {{ student.roll_number or "—" }}</p>
-                <p><strong>Date of Birth:</strong> {{ student.date_of_birth or "—" }}</p>
+
+        <div class="id-card-top">
+            {% if school.logo %}
+            <img class="mini-logo" src="{{ url_for('static', filename=school.logo) }}" alt="School logo">
+            {% else %}
+            <div class="mini-logo school-logo-placeholder">S</div>
+            {% endif %}
+
+            <div class="school-card-heading">
+                <strong>{{ school.name or "Your School Name" }}</strong>
+                <small>{{ school.address or "School Address" }}</small>
             </div>
         </div>
-        <div class="id-card-footer">Please carry this card on school days.</div>
+
+        <div class="id-card-body">
+
+            <div class="id-details">
+                <span class="card-label">OFFICIAL STUDENT ID</span>
+
+                <h2>{{ student.name }}</h2>
+
+                <p>
+                    <strong>Student ID</strong>
+                    <span>STU-{{ "%04d"|format(student.id) }}</span>
+                </p>
+
+                <p>
+                    <strong>Class</strong>
+                    <span>{{ student.student_class or "—" }}</span>
+                </p>
+
+                <p>
+                    <strong>Roll Number</strong>
+                    <span>{{ student.roll_number or "—" }}</span>
+                </p>
+
+                <p>
+                    <strong>Date of Birth</strong>
+                    <span>{{ student.date_of_birth or "—" }}</span>
+                </p>
+
+                <p>
+                    <strong>Blood Group</strong>
+                    <span>{{ student.blood_group or "—" }}</span>
+                </p>
+                <p>
+                    <strong>Address</strong>
+                    <span>{{ student.address or "—" }}</span>
+                </p>
+            </div>
+
+            <div class="id-photo-area">
+                {% if student.photo %}
+                <img class="id-photo-preview" src="{{ url_for('static', filename=student.photo) }}"
+                    alt="Photo of {{ student.name }}">
+                {% else %}
+                <div class="photo-placeholder">
+                    {{ student.name[:1]|upper if student.name else "S" }}
+                </div>
+                {% endif %}
+                <small>STUDENT</small>
+            </div>
+
+        </div>
+
+        <div class="id-card-footer">
+            Please carry this card on school days.
+        </div>
+
     </div>
-    <div class="form-actions centered-actions"><a class="button button-outline" href="/students">Back</a><a
-            class="button button-primary" href="/id-card-pdf/{{ student.id }}">Download ID card PDF</a><a
-            class="button button-outline" href="/edit-student/{{ student.id }}">Edit / add photo</a></div>
-</section>{% endblock %}
+
+    <div class="form-actions centered-actions id-card-actions">
+        <a class="button button-outline" href="/students">
+            Back
+        </a>
+
+        <a class="button button-outline" href="/edit-student/{{ student.id }}">
+            Edit Student
+        </a>
+
+        <button class="button button-outline" type="button" onclick="window.print()">
+            Print Preview Card
+        </button>
+
+        <a class="button button-primary" href="/id-card-pdf/{{ student.id }}">
+            Download ID Card PDF
+        </a>
+    </div>
+
+</section>
+{% endblock %}

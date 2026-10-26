@@ -903,3 +903,423 @@ td strong {
     color: #a63232;
     border: 1px solid #ffd8d5
 }
+
+/* Dashboard quick actions */
+.quick-actions {
+    margin: 24px 0;
+}
+
+.quick-actions-heading {
+    margin-bottom: 14px;
+}
+
+.quick-actions-heading h2 {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.quick-actions-heading p {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.quick-action-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 18px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--ink);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(20, 38, 63, 0.08);
+}
+
+.quick-action-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 20px;
+}
+
+.quick-blue {
+    background: #e9efff;
+    color: #316cf4;
+}
+
+.quick-green {
+    background: #e1f8ef;
+    color: #1b986b;
+}
+
+.quick-orange {
+    background: #fff1df;
+    color: #c57a20;
+}
+
+.quick-action-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.quick-action-text strong {
+    font-size: 12px;
+}
+
+.quick-action-text small {
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.quick-arrow {
+    margin-left: auto;
+    color: var(--blue);
+    font-size: 18px;
+}
+
+@media (max-width: 900px) {
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .quick-action-card {
+        padding: 14px;
+    }
+}
+
+/* ===== Improved student ID card ===== */
+
+.id-preview-panel {
+    padding: 28px;
+}
+
+.id-card-preview {
+    width: min(100%, 560px);
+    aspect-ratio: 85.6 / 54;
+    margin: 8px auto 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #d6deea;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(22, 42, 72, 0.12);
+    color: #20324b;
+}
+
+.id-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 70px;
+    padding: 12px 18px;
+    box-sizing: border-box;
+    background: linear-gradient(110deg, #142943, #28588a);
+    color: white;
+}
+
+.mini-logo {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    object-fit: contain;
+    background: white;
+    border-radius: 8px;
+    padding: 3px;
+    box-sizing: border-box;
+}
+
+.school-logo-placeholder {
+    display: grid;
+    place-items: center;
+    font-size: 23px;
+    font-weight: 800;
+    color: #244c79;
+}
+
+.school-card-heading {
+    min-width: 0;
+}
+
+.school-card-heading strong {
+    display: block;
+    font-size: 15px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.school-card-heading small {
+    display: block;
+    margin-top: 5px;
+    color: #d7e5f7;
+    font-size: 10px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.id-card-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    box-sizing: border-box;
+}
+
+.id-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-label {
+    display: inline-block;
+    margin-bottom: 7px;
+    color: #316cf4;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+.id-details h2 {
+    margin: 0 0 12px;
+    color: #182a42;
+    font-size: 19px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.id-details p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 7px 0;
+    color: #536176;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.id-details p strong {
+    color: #273a53;
+}
+
+.id-photo-area {
+    flex: 0 0 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.id-photo-preview,
+.id-photo-area .photo-placeholder {
+    width: 82px;
+    height: 100px;
+    box-sizing: border-box;
+    object-fit: cover;
+    border: 2px solid #e0e8f5;
+    border-radius: 7px;
+}
+
+.id-photo-area .photo-placeholder {
+    display: grid;
+    place-items: center;
+    background: #eaf0ff;
+    color: #316cf4;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.id-photo-area > small {
+    color: #8794a6;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.id-card-footer {
+    padding: 9px 12px;
+    background: #f1f5fb;
+    border-top: 1px solid #e2e9f3;
+    color: #64758b;
+    font-size: 9px;
+    text-align: center;
+}
+
+.id-card-actions {
+    flex-wrap: wrap;
+}
+
+/* Mobile preview */
+@media (max-width: 600px) {
+    .id-preview-panel {
+        padding: 14px;
+    }
+
+    .id-card-top {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .mini-logo {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+    }
+
+    .school-card-heading strong {
+        font-size: 12px;
+    }
+
+    .school-card-heading small {
+        font-size: 9px;
+    }
+
+    .id-card-body {
+        gap: 7px;
+        padding: 10px;
+    }
+
+    .id-details h2 {
+        font-size: 14px;
+        margin-bottom: 7px;
+    }
+
+    .id-details p {
+        font-size: 9px;
+        gap: 3px;
+        margin: 5px 0;
+    }
+
+    .id-photo-area {
+        flex-basis: 64px;
+    }
+
+    .id-photo-preview,
+    .id-photo-area .photo-placeholder {
+        width: 60px;
+        height: 76px;
+    }
+
+    .card-label {
+        font-size: 7px;
+        letter-spacing: 0.5px;
+    }
+}
+
+/* Print only the card, not the dashboard */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 10mm;
+    }
+
+    body {
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .sidebar,
+    .topbar,
+    .page-footer,
+    .page-intro,
+    .id-card-actions {
+        display: none !important;
+    }
+
+    .main-area {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .preview-panel {
+        padding: 0 !important;
+        overflow: visible !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .id-card-preview {
+        width: 85.6mm !important;
+        height: 54mm !important;
+        aspect-ratio: auto !important;
+        margin: 0 !important;
+        border: 0.3mm solid #d6deea;
+        border-radius: 2mm;
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        break-inside: avoid;
+    }
+
+    .id-card-top {
+        min-height: 15mm;
+        padding: 2mm 3mm;
+    }
+
+    .mini-logo {
+        width: 10mm;
+        height: 10mm;
+        flex-basis: 10mm;
+    }
+
+    .school-card-heading strong {
+        font-size: 8pt;
+    }
+
+    .school-card-heading small {
+        font-size: 5.5pt;
+    }
+
+    .id-card-body {
+        padding: 2mm 3mm;
+        gap: 2mm;
+    }
+
+    .id-details h2 {
+        font-size: 10pt;
+    }
+
+    .id-details p {
+        font-size: 6pt;
+        margin: 1mm 0;
+    }
+
+    .id-photo-area {
+        flex-basis: 18mm;
+    }
+
+    .id-photo-preview,
+    .id-photo-area .photo-placeholder {
+        width: 17mm;
+        height: 22mm;
+    }
+
+    .id-card-footer {
+        padding: 1.5mm;
+        font-size: 5.5pt;
+    }
+}
+
