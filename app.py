@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash,session
+from werkzeug.security import generate_password_hash,check_password_hash
 import sqlite3
 import os
+import secrets
 import uuid
 from werkzeug.utils import secure_filename
 from reportlab.lib.utils import ImageReader
@@ -9,8 +11,30 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret-before-real-use"
+
+# Keep the session secret in a local, private file.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+
+SECRET_KEY_FILE = os.path.join(INSTANCE_DIR, "secret_key.txt")
+
+if os.path.exists(SECRET_KEY_FILE):
+    with open(SECRET_KEY_FILE, "r", encoding="utf-8") as f:
+        SECRET_KEY = f.read().strip()
+else:
+    SECRET_KEY = secrets.token_hex(32)
+    with open(SECRET_KEY_FILE, "w", encoding="utf-8") as f:
+        f.write(SECRET_KEY)
+
+if not SECRET_KEY:
+    raise RuntimeError("Flask secret key is missing.")
+
+app.secret_key = SECRET_KEY
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
+
 DATABASE = 'school.db'
 UPLOAD_FOLDER = os.path.join("static", "uploads")
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
