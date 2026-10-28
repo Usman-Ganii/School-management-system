@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file, flash,session
 from werkzeug.security import generate_password_hash,check_password_hash
-<<<<<<< HEAD
+# <<<<<<< HEAD
 from functools import wraps
-=======
->>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
+# =======
+# >>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
 import sqlite3
 import os
 import secrets
