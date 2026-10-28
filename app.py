@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file, flash,session
 from werkzeug.security import generate_password_hash,check_password_hash
+<<<<<<< HEAD
 from functools import wraps
+=======
+>>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
 import sqlite3
 import os
 import secrets
@@ -17,6 +20,7 @@ from openpyxl import load_workbook
 from datetime import date, datetime
 
 app = Flask(__name__)
+<<<<<<< HEAD
 # secret key configuration here
 csrf = CSRFProtect(app)
 limiter = Limiter(
@@ -54,6 +58,8 @@ def admin_required(view_function):
             return redirect(url_for("home"))
         return view_function(*args, **kwargs)
     return wrapped_view
+=======
+>>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
 
 # Keep the session secret in a local, private file.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -76,11 +82,18 @@ if not SECRET_KEY:
 app.secret_key = SECRET_KEY
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+<<<<<<< HEAD
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
 app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
 
 DATABASE = os.path.join(BASE_DIR, 'school.db')
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+=======
+app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
+
+DATABASE = 'school.db'
+UPLOAD_FOLDER = os.path.join("static", "uploads")
+>>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 

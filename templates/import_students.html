@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Import Students from Excel</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f6fa;color:#172033;margin:0;padding:24px}
+main{max-width:760px;margin:0 auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 3px 18px #00000010}
+h1{margin-top:0;font-size:25px}p{line-height:1.5}.muted{color:#5d6878}
+.notice{padding:12px 14px;border-radius:8px;background:#eef4ff;margin:14px 0}
+.success{background:#eaf8ef;padding:12px;border-radius:8px;margin:12px 0}
+.error{background:#fff0f0;padding:10px;border-radius:8px;margin:8px 0}
+label{font-weight:bold;display:block;margin:16px 0 8px}
+input[type=file]{display:block;width:100%;padding:12px;border:1px solid #ccd3df;border-radius:8px;box-sizing:border-box}
+button,a.link{display:inline-block;background:#174ea6;color:white;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-weight:bold;cursor:pointer;margin-top:14px}
+a.secondary{background:#e8edf5;color:#172033}
+ul{line-height:1.6;padding-left:22px}.actions{display:flex;gap:10px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<main>
+<h1>Import Students from Excel</h1>
+<p class="muted">Upload an .xlsx file using the Student Import Template. One student per row.</p>
+<div class="notice">
+<strong>Before uploading:</strong>
+<ul>
+<li>Keep the column headings unchanged.</li>
+<li>Required fields: <code>name</code> and <code>student_class</code>.</li>
+<li>Classes currently configured in School Settings: {{ classes|join(', ') }}.</li>
+<li>Students with a duplicate roll number in the same class will be skipped.</li>
+<li>Photos are not imported from Excel; add them separately in the app.</li>
+</ul>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="error">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+{% if summary %}
+<div class="success"><strong>Import finished.</strong> Imported: {{ summary.imported }}. Skipped: {{ summary.skipped }}.</div>
+{% endif %}
+{% if errors %}
+<h2>Rows needing attention</h2>
+<ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+{% endif %}
+<form method="post" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label for="excel_file">Choose Excel file (.xlsx)</label>
+<input id="excel_file" name="excel_file" type="file" accept=".xlsx" required>
+<button type="submit">Import Students</button>
+</form>
+<div class="actions">
+<a class="link secondary" href="{{ url_for('students_page') }}">Back to Students</a>
+<a class="link secondary" href="{{ url_for('home') }}">Dashboard</a>
+</div>
+</main>
+</body>
+</html>
