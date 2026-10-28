@@ -1,8 +1,17 @@
+# Python files
 __pycache__/
 *.py[cod]
-venv/
 .venv/
+venv/
+
+# Secrets and local configuration
 .env
-*.db
 instance/
-uploads/
+
+# Student database and uploaded records
+school.db
+*.db
+static/uploads/
+
+# Backups
+backups/

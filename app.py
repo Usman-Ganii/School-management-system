@@ -1,18 +1,86 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash,session
+from werkzeug.security import generate_password_hash,check_password_hash
+from functools import wraps
 import sqlite3
 import os
+import secrets
 import uuid
 from werkzeug.utils import secure_filename
 from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from openpyxl import load_workbook
+from datetime import date, datetime
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret-before-real-use"
+# secret key configuration here
+csrf = CSRFProtect(app)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[]
+)
+
+@app.errorhandler(429)
+def rate_limit_error(error):
+    flash(
+        "Too many login attempts. Please wait one minute and try again.",
+        "error"
+    )
+    return render_template("login.html"), 429
+
+def login_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if "admin_id" not in session:
+            return redirect(url_for("login"))
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
+
+def admin_required(view_function):
+    """Allow only administrator accounts to change application data."""
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if "admin_id" not in session:
+            return redirect(url_for("login"))
+        if session.get("user_role", "admin") != "admin":
+            flash("This action is available to administrators only.", "error")
+            return redirect(url_for("home"))
+        return view_function(*args, **kwargs)
+    return wrapped_view
+
+# Keep the session secret in a local, private file.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+
+SECRET_KEY_FILE = os.path.join(INSTANCE_DIR, "secret_key.txt")
+
+if os.path.exists(SECRET_KEY_FILE):
+    with open(SECRET_KEY_FILE, "r", encoding="utf-8") as f:
+        SECRET_KEY = f.read().strip()
+else:
+    SECRET_KEY = secrets.token_hex(32)
+    with open(SECRET_KEY_FILE, "w", encoding="utf-8") as f:
+        f.write(SECRET_KEY)
+
+if not SECRET_KEY:
+    raise RuntimeError("Flask secret key is missing.")
+
+app.secret_key = SECRET_KEY
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
 app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
-DATABASE = 'school.db'
-UPLOAD_FOLDER = os.path.join("static", "uploads")
+
+DATABASE = os.path.join(BASE_DIR, 'school.db')
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -69,6 +137,37 @@ def create_database():
         db.execute("ALTER TABLE school ADD COLUMN classes TEXT DEFAULT '8,9,10'")
     db.execute("INSERT OR IGNORE INTO school (id, name, address, phone, email, principal, logo, classes) VALUES (1, 'Your School Name', 'School Address', '', '', '', NULL, '8,9,10')")
     db.execute("UPDATE school SET classes='8,9,10' WHERE classes IS NULL OR TRIM(classes)=''")
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS admins (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Existing accounts stay administrators. Add a role column safely for old databases.
+    admin_columns = [row["name"] for row in db.execute("PRAGMA table_info(admins)").fetchall()]
+    if "role" not in admin_columns:
+        db.execute("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
+
+    # Optional recruiter account. Set both variables in the hosting dashboard;
+    # never hard-code the demo password in this source file.
+    recruiter_username = os.environ.get("RECRUITER_USERNAME", "").strip()
+    recruiter_password = os.environ.get("RECRUITER_PASSWORD", "")
+    if recruiter_username and recruiter_password:
+        # Create the demo account, or reset its password and role on startup.
+        existing = db.execute("SELECT id FROM admins WHERE username=?", (recruiter_username,)).fetchone()
+        password_hash = generate_password_hash(recruiter_password)
+        if existing:
+            db.execute(
+                "UPDATE admins SET password_hash=?, role='recruiter' WHERE username=?",
+                (password_hash, recruiter_username)
+            )
+        else:
+            db.execute(
+                "INSERT INTO admins (username, password_hash, role) VALUES (?, ?, 'recruiter')",
+                (recruiter_username, password_hash)
+            )
     db.commit()
     db.close()
 
@@ -85,8 +184,48 @@ def get_classes():
     raw = school['classes'] if school and 'classes' in school.keys() else '8,9,10'
     return [item.strip() for item in (raw or '8,9,10').split(',') if item.strip()]
 
+@app.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
+def login():
+    if session.get("admin_id"):
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+
+        db = connect_database()
+        try:
+            admin = db.execute(
+                "SELECT * FROM admins WHERE username = ?",
+                (username,)
+            ).fetchone()
+        finally:
+            db.close()
+
+        if admin and check_password_hash(
+            admin["password_hash"], password
+        ):
+            session.clear()
+            session["admin_id"] = admin["id"]
+            session["admin_username"] = admin["username"]
+            session["user_role"] = admin["role"] if "role" in admin.keys() else "admin"
+            return redirect(url_for("home"))
+
+        flash("Invalid username or password.", "error")
+
+    return render_template("login.html")
+
+@app.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    session.clear()
+    flash("You have been logged out successfully.", "success")
+    return redirect(url_for("login"))
+
 
 @app.route('/')
+@login_required
 def home():
     db = connect_database()
     students = db.execute('SELECT * FROM students ORDER BY id DESC LIMIT 5').fetchall()
@@ -96,6 +235,7 @@ def home():
 
 
 @app.route('/students')
+@login_required
 def students_page():
     db = connect_database()
     students = db.execute('SELECT * FROM students ORDER BY id DESC').fetchall()
@@ -103,7 +243,27 @@ def students_page():
     return render_template('students.html', students=students, school=get_school())
 
 
+@app.route('/id-cards')
+@login_required
+def id_cards_page():
+    db = connect_database()
+    students = db.execute('SELECT * FROM students ORDER BY student_class, roll_number, name').fetchall()
+    db.close()
+    return render_template('id_cards.html', students=students, school=get_school())
+
+
+@app.route('/transfer-certificates')
+@login_required
+def transfer_certificates_page():
+    db = connect_database()
+    students = db.execute('SELECT * FROM students ORDER BY student_class, roll_number, name').fetchall()
+    db.close()
+    return render_template('transfer_certificates.html', students=students, school=get_school())
+
+
 @app.route('/add-student', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def add_student():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -124,6 +284,8 @@ def add_student():
 
 
 @app.route('/edit-student/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def edit_student(student_id):
     db = connect_database()
     student = db.execute('SELECT * FROM students WHERE id=?', (student_id,)).fetchone()
@@ -149,11 +311,13 @@ def edit_student(student_id):
 
 
 @app.route('/delete-student/<int:student_id>', methods=['POST'])
+@login_required
+@admin_required
 def delete_student(student_id):
     db = connect_database()
     student = db.execute("SELECT photo FROM students WHERE id=?", (student_id,)).fetchone()
     if student and student["photo"]:
-        photo_path = os.path.join("static", student["photo"])
+        photo_path = os.path.join(BASE_DIR, "static", student["photo"])
         if os.path.isfile(photo_path):
             os.remove(photo_path)
     db.execute('DELETE FROM students WHERE id=?', (student_id,))
@@ -163,6 +327,8 @@ def delete_student(student_id):
 
 
 @app.route('/settings', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def settings():
     if request.method == 'POST':
         db = connect_database()
@@ -175,7 +341,7 @@ def settings():
                 logo_name = 'school_logo_' + uuid.uuid4().hex + '.' + ext
                 uploaded_logo.save(os.path.join(UPLOAD_FOLDER, logo_name))
                 if logo:
-                    old_path = os.path.join('static', logo)
+                    old_path = os.path.join(BASE_DIR, 'static', logo)
                     if os.path.isfile(old_path):
                         try: os.remove(old_path)
                         except OSError: pass
@@ -195,6 +361,7 @@ def settings():
 
 
 @app.route('/id-card/<int:student_id>')
+@login_required
 def id_card(student_id):
     db = connect_database()
     student = db.execute('SELECT * FROM students WHERE id=?', (student_id,)).fetchone()
@@ -204,6 +371,7 @@ def id_card(student_id):
     return render_template('id_card.html', student=student, school=get_school())
 
 @app.route('/id-card-pdf/<int:student_id>')
+@login_required
 def id_card_pdf(student_id):
     db = connect_database()
     student = db.execute(
@@ -243,7 +411,7 @@ def id_card_pdf(student_id):
     # School logo.
     logo_path = None
     if school['logo']:
-        candidate = os.path.join('static', school['logo'])
+        candidate = os.path.join(BASE_DIR, 'static', school['logo'])
         if os.path.isfile(candidate):
             logo_path = candidate
 
@@ -309,7 +477,7 @@ def id_card_pdf(student_id):
 
     photo_path = None
     if student['photo']:
-        candidate = os.path.join('static', student['photo'])
+        candidate = os.path.join(BASE_DIR, 'static', student['photo'])
         if os.path.isfile(candidate):
             photo_path = candidate
 
@@ -373,6 +541,7 @@ def id_card_pdf(student_id):
     )
 
 @app.route('/transfer-certificate/<int:student_id>')
+@login_required
 def transfer_certificate(student_id):
     db = connect_database()
     student = db.execute('SELECT * FROM students WHERE id=?', (student_id,)).fetchone()
@@ -382,6 +551,7 @@ def transfer_certificate(student_id):
     return render_template('tc_form.html', student=student, school=get_school())
 
 @app.route('/transfer-certificate-pdf/<int:student_id>', methods=['POST'])
+@login_required
 def transfer_certificate_pdf(student_id):
     db = connect_database()
     student = db.execute(
@@ -413,7 +583,7 @@ def transfer_certificate_pdf(student_id):
 
     # School logo
     if school['logo']:
-        logo_path = os.path.join('static', school['logo'])
+        logo_path = os.path.join(BASE_DIR, 'static', school['logo'])
         if os.path.isfile(logo_path):
             try:
                 pdf.drawImage(
@@ -560,6 +730,137 @@ def transfer_certificate_pdf(student_id):
         mimetype='application/pdf'
     )
 
+
+@app.route('/import-students', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def import_students():
+    expected_headers = [
+        'name', 'father_name', 'student_class', 'roll_number',
+        'date_of_birth', 'address', 'admission_date', 'blood_group'
+    ]
+    summary = None
+    errors = []
+
+    if request.method == 'POST':
+        uploaded = request.files.get('excel_file')
+        if not uploaded or not uploaded.filename:
+            flash('Choose an Excel .xlsx file first.', 'error')
+            return redirect(url_for('import_students'))
+
+        if not uploaded.filename.lower().endswith('.xlsx'):
+            flash('Please upload an .xlsx Excel file. PDF and .xls files are not supported.', 'error')
+            return redirect(url_for('import_students'))
+
+        workbook = None
+        try:
+            workbook = load_workbook(uploaded, read_only=True, data_only=True)
+            sheet = workbook['Students'] if 'Students' in workbook.sheetnames else workbook.active
+            rows = sheet.iter_rows(values_only=True)
+            header_row = next(rows, None)
+            headers = [str(value).strip().lower() if value is not None else '' for value in (header_row or ())]
+            if not all(header in headers for header in expected_headers):
+                flash('Excel headings do not match the template. Please use the provided Student Import Template.', 'error')
+                return redirect(url_for('import_students'))
+
+            indexes = {header: headers.index(header) for header in expected_headers}
+
+            def cell_text(value):
+                if value is None:
+                    return ''
+                if isinstance(value, (datetime, date)):
+                    return value.strftime('%d-%m-%Y')
+                return str(value).strip()
+
+            db = connect_database()
+            imported = 0
+            skipped = 0
+            valid_classes = set(get_classes())
+
+            try:
+                for excel_row_number, values in enumerate(rows, start=2):
+                    values = list(values)
+                    if not any(value is not None and str(value).strip() for value in values):
+                        continue
+
+                    record = {
+                        key: cell_text(values[indexes[key]]) if indexes[key] < len(values) else ''
+                        for key in expected_headers
+                    }
+                    name = record['name']
+                    student_class = record['student_class']
+                    roll_number = record['roll_number']
+
+                    row_errors = []
+                    if not name:
+                        row_errors.append('student name is required')
+                    if not student_class:
+                        row_errors.append('class is required')
+                    elif student_class not in valid_classes:
+                        row_errors.append(
+                            'class ' + student_class + ' is not in School Settings (allowed: '
+                            + ', '.join(sorted(valid_classes)) + ')'
+                        )
+
+                    if row_errors:
+                        skipped += 1
+                        errors.append('Row ' + str(excel_row_number) + ': ' + '; '.join(row_errors))
+                        continue
+
+                    duplicate = None
+                    if roll_number:
+                        duplicate = db.execute(
+                            'SELECT id FROM students WHERE student_class=? AND roll_number=? LIMIT 1',
+                            (student_class, roll_number)
+                        ).fetchone()
+
+                    if duplicate:
+                        skipped += 1
+                        errors.append(
+                            'Row ' + str(excel_row_number) + ': duplicate roll number '
+                            + roll_number + ' in class ' + student_class + '; not imported.'
+                        )
+                        continue
+
+                    db.execute(
+                        "INSERT INTO students "
+                        "(name, father_name, student_class, roll_number, date_of_birth, address, admission_date, photo, blood_group) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)",
+                        (
+                            name, record['father_name'], student_class, roll_number,
+                            record['date_of_birth'], record['address'], record['admission_date'],
+                            record['blood_group']
+                        )
+                    )
+                    imported += 1
+
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.close()
+
+            summary = {'imported': imported, 'skipped': skipped}
+        except Exception:
+            app.logger.exception('Excel student import failed')
+            flash('Could not read this Excel file. Make sure it is a valid .xlsx file using the template.', 'error')
+            return redirect(url_for('import_students'))
+        finally:
+            if workbook is not None:
+                workbook.close()
+
+    return render_template(
+        'import_students.html',
+        school=get_school(),
+        summary=summary,
+        errors=errors,
+        classes=get_classes()
+    )
+
+
+# Initialize/migrate the database for both local runs and Gunicorn deployment.
+create_database()
+
 if __name__ == '__main__':
-    create_database()
-    app.run(debug=True)
+    app.run(debug=False)
