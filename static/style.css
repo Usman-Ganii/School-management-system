@@ -1323,3 +1323,15 @@ td strong {
     }
 }
 
+
+.btn-pdf,
+.btn-pdf:link,
+.btn-pdf:visited,
+.btn-pdf:hover,
+.btn-pdf:focus,
+.btn-pdf:active {
+    color: #0e4e06 !important;
+    background-color: #99e09d;
+    border-color: #c4ddbb;
+    text-decoration: none;
+}

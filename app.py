@@ -1,9 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file, flash,session
 from werkzeug.security import generate_password_hash,check_password_hash
-# <<<<<<< HEAD
 from functools import wraps
-# =======
-# >>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
 import sqlite3
 import os
 import secrets
@@ -20,7 +17,6 @@ from openpyxl import load_workbook
 from datetime import date, datetime
 
 app = Flask(__name__)
-# <<<<<<< HEAD
 # secret key configuration here
 csrf = CSRFProtect(app)
 limiter = Limiter(
@@ -46,21 +42,6 @@ def login_required(view_function):
 
     return wrapped_view
 
-
-def admin_required(view_function):
-    """Allow only administrator accounts to change application data."""
-    @wraps(view_function)
-    def wrapped_view(*args, **kwargs):
-        if "admin_id" not in session:
-            return redirect(url_for("login"))
-        if session.get("user_role", "admin") != "admin":
-            flash("This action is available to administrators only.", "error")
-            return redirect(url_for("home"))
-        return view_function(*args, **kwargs)
-    return wrapped_view
-# =======
-# >>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
-
 # Keep the session secret in a local, private file.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
@@ -82,18 +63,10 @@ if not SECRET_KEY:
 app.secret_key = SECRET_KEY
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-# <<<<<<< HEAD
-app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
-app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
-
-DATABASE = os.path.join(BASE_DIR, 'school.db')
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
-# =======
 app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
 
 DATABASE = 'school.db'
 UPLOAD_FOLDER = os.path.join("static", "uploads")
-# >>>>>>> 516800c66e1ebad7546398b6904d8a63f0a551ed
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -158,29 +131,6 @@ def create_database():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    # Existing accounts stay administrators. Add a role column safely for old databases.
-    admin_columns = [row["name"] for row in db.execute("PRAGMA table_info(admins)").fetchall()]
-    if "role" not in admin_columns:
-        db.execute("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
-
-    # Optional recruiter account. Set both variables in the hosting dashboard;
-    # never hard-code the demo password in this source file.
-    recruiter_username = os.environ.get("RECRUITER_USERNAME", "").strip()
-    recruiter_password = os.environ.get("RECRUITER_PASSWORD", "")
-    if recruiter_username and recruiter_password:
-        # Create the demo account, or reset its password and role on startup.
-        existing = db.execute("SELECT id FROM admins WHERE username=?", (recruiter_username,)).fetchone()
-        password_hash = generate_password_hash(recruiter_password)
-        if existing:
-            db.execute(
-                "UPDATE admins SET password_hash=?, role='recruiter' WHERE username=?",
-                (password_hash, recruiter_username)
-            )
-        else:
-            db.execute(
-                "INSERT INTO admins (username, password_hash, role) VALUES (?, ?, 'recruiter')",
-                (recruiter_username, password_hash)
-            )
     db.commit()
     db.close()
 
@@ -222,7 +172,6 @@ def login():
             session.clear()
             session["admin_id"] = admin["id"]
             session["admin_username"] = admin["username"]
-            session["user_role"] = admin["role"] if "role" in admin.keys() else "admin"
             return redirect(url_for("home"))
 
         flash("Invalid username or password.", "error")
@@ -276,7 +225,6 @@ def transfer_certificates_page():
 
 @app.route('/add-student', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add_student():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -298,7 +246,6 @@ def add_student():
 
 @app.route('/edit-student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_student(student_id):
     db = connect_database()
     student = db.execute('SELECT * FROM students WHERE id=?', (student_id,)).fetchone()
@@ -325,12 +272,11 @@ def edit_student(student_id):
 
 @app.route('/delete-student/<int:student_id>', methods=['POST'])
 @login_required
-@admin_required
 def delete_student(student_id):
     db = connect_database()
     student = db.execute("SELECT photo FROM students WHERE id=?", (student_id,)).fetchone()
     if student and student["photo"]:
-        photo_path = os.path.join(BASE_DIR, "static", student["photo"])
+        photo_path = os.path.join("static", student["photo"])
         if os.path.isfile(photo_path):
             os.remove(photo_path)
     db.execute('DELETE FROM students WHERE id=?', (student_id,))
@@ -341,7 +287,6 @@ def delete_student(student_id):
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def settings():
     if request.method == 'POST':
         db = connect_database()
@@ -354,7 +299,7 @@ def settings():
                 logo_name = 'school_logo_' + uuid.uuid4().hex + '.' + ext
                 uploaded_logo.save(os.path.join(UPLOAD_FOLDER, logo_name))
                 if logo:
-                    old_path = os.path.join(BASE_DIR, 'static', logo)
+                    old_path = os.path.join('static', logo)
                     if os.path.isfile(old_path):
                         try: os.remove(old_path)
                         except OSError: pass
@@ -424,7 +369,7 @@ def id_card_pdf(student_id):
     # School logo.
     logo_path = None
     if school['logo']:
-        candidate = os.path.join(BASE_DIR, 'static', school['logo'])
+        candidate = os.path.join('static', school['logo'])
         if os.path.isfile(candidate):
             logo_path = candidate
 
@@ -490,7 +435,7 @@ def id_card_pdf(student_id):
 
     photo_path = None
     if student['photo']:
-        candidate = os.path.join(BASE_DIR, 'static', student['photo'])
+        candidate = os.path.join('static', student['photo'])
         if os.path.isfile(candidate):
             photo_path = candidate
 
@@ -596,7 +541,7 @@ def transfer_certificate_pdf(student_id):
 
     # School logo
     if school['logo']:
-        logo_path = os.path.join(BASE_DIR, 'static', school['logo'])
+        logo_path = os.path.join('static', school['logo'])
         if os.path.isfile(logo_path):
             try:
                 pdf.drawImage(
@@ -746,7 +691,6 @@ def transfer_certificate_pdf(student_id):
 
 @app.route('/import-students', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def import_students():
     expected_headers = [
         'name', 'father_name', 'student_class', 'roll_number',
@@ -872,8 +816,6 @@ def import_students():
     )
 
 
-# Initialize/migrate the database for both local runs and Gunicorn deployment.
-create_database()
-
 if __name__ == '__main__':
+    create_database()
     app.run(debug=False)
