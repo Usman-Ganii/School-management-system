@@ -145,6 +145,22 @@ def create_database():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
+    admin_username = os.environ.get("ADMIN_USERNAME")
+    admin_password = os.environ.get("ADMIN_PASSWORD")
+
+    if admin_username and admin_password:
+        db.execute(
+            """
+            INSERT OR IGNORE INTO admins
+            (username, password_hash)
+            VALUES (?, ?)
+            """,
+            (
+                admin_username,
+                generate_password_hash(admin_password)
+            )
+        )
     # Existing accounts stay administrators. Add a role column safely for old databases.
     admin_columns = [row["name"] for row in db.execute("PRAGMA table_info(admins)").fetchall()]
     if "role" not in admin_columns:
