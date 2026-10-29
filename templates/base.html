@@ -18,8 +18,8 @@
     <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">▦ <span>Dashboard</span></a>
     <a class="nav-link {% if request.path.startswith('/students') or request.path.startswith('/add-student') or request.path.startswith('/edit-student') %}active{% endif %}"
       href="/students">♙ <span>Students</span></a>
-    <a class="nav-link" href="/students">▣ <span>ID Cards</span></a>
-    <a class="nav-link" href="/students">▤ <span>Transfer Certificates</span></a>
+    <a class="nav-link" href="{{ url_for('id_cards_page')}}">▣ <span>ID Cards</span></a>
+    <a class="nav-link" href="{{ url_for('transfer_certificates_page')}}">▤ <span>Transfer Certificates</span></a>
     <a href="{{ url_for('import_students') }}" class="btn btn-primary">
       Import Students
     </a>

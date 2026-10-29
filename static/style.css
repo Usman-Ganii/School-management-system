@@ -1381,3 +1381,68 @@ td strong {
 .btn.btn-primary:focus {
     box-shadow: 0 0 0 0.25rem rgba(49, 132, 253, 0.5);
 }
+/* Student Action Buttons */
+.btn-preview {
+    background: #0d6efd;
+    color: #fff !important;
+    border: 1px solid #0d6efd;
+}
+
+.btn-pdf {
+    background: #198754;
+    color: #fff !important;
+    border: 1px solid #198754;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #212529 !important;
+    border: 1px solid #ffc107;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: #fff !important;
+    border: 1px solid #dc3545;
+}
+
+.btn-tc {
+    background: #6f42c1;
+    color: #fff !important;
+    border: 1px solid #6f42c1;
+}
+
+.btn-id-card {
+    background: #0dcaf0;
+    color: #212529 !important;
+    border: 1px solid #0dcaf0;
+}
+
+/* Common button styling */
+.btn-preview,
+.btn-pdf,
+.btn-edit,
+.btn-delete,
+.btn-tc,
+.btn-id-card {
+    display: inline-block;
+    padding: 7px 12px;
+    margin: 3px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.btn-preview:hover,
+.btn-pdf:hover,
+.btn-edit:hover,
+.btn-delete:hover,
+.btn-tc:hover,
+.btn-id-card:hover {
+    filter: brightness(0.88);
+    transform: translateY(-1px);
+}

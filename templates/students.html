@@ -39,11 +39,11 @@ endblock %}
                     <td>{{ student.roll_number or "—" }}</td>
                     <td>{{ student.date_of_birth or "—" }}</td>
                     <td>
-                        <div class="action-links"><a href="/id-card/{{ student.id }}">ID card</a><a
-                                href="/transfer-certificate/{{ student.id }}">TC</a><a
+                        <div class="action-links"><a class="btn-id-card" href="/id-card/{{ student.id }}">ID card</a><a class="btn-tc"
+                                href="/transfer-certificate/{{ student.id }}">TC</a><a class="btn-edit"
                                 href="/edit-student/{{ student.id }}">Edit</a>
                             <form method="POST" action="/delete-student/{{ student.id }}"
-                                onsubmit="return confirm('Delete this student record?');"><button class="delete-link"
+                                onsubmit="return confirm('Delete this student record?');"><button class="delete-link btn-delete"
                                     type="submit">Delete</button></form>
                         </div>
                     </td>
