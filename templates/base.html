@@ -23,6 +23,9 @@
     <p class="nav-label settings-label">PREFERENCES</p>
     <a class="nav-link {% if request.path == '/settings' %}active{% endif %}" href="/settings">⚙ <span>School
         Settings</span></a>
+    <a href="{{ url_for('logout') }}" class="logout-btn">
+      Logout
+    </a>
     <div class="sidebar-footer">
       <div class="footer-dot"></div>
       <div><strong>Local School App</strong><small>Student services</small></div>

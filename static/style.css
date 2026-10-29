@@ -1335,3 +1335,28 @@ td strong {
     border-color: #c4ddbb;
     text-decoration: none;
 }
+
+/* Logout Button */
+.logout-btn {
+    display: inline-block;
+    background-color: #dc3545;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #b02a37;
+    color: #ffffff;
+}
+
+.logout-btn:focus {
+    outline: 3px solid #f5a3aa;
+    outline-offset: 2px;
+}
