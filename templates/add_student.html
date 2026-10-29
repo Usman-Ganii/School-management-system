@@ -17,7 +17,7 @@
         action="{% if student %}/edit-student/{{ student.id }}{% else %}/add-student{% endif %}">
         <div class="form-grid">
             <div class="form-field"><label>Student full name *</label><input type="text" name="name"
-                    value="{{ student.name if student else '' }}" placeholder="e.g. Ayesha Sharma" required></div>
+                    value="{{ student.name if student else '' }}" placeholder="e.g. Usman Gani Ansari" required></div>
             <div class="form-field"><label>Father's / Guardian's name</label><input type="text" name="father_name"
                     value="{{ student.father_name if student else '' }}" placeholder="Enter guardian's name"></div>
             <div class="form-field"><label>Class *</label><select name="student_class" required>

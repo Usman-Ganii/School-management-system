@@ -20,6 +20,9 @@
       href="/students">♙ <span>Students</span></a>
     <a class="nav-link" href="/students">▣ <span>ID Cards</span></a>
     <a class="nav-link" href="/students">▤ <span>Transfer Certificates</span></a>
+    <a href="{{ url_for('import_students') }}" class="btn btn-primary">
+      Import Students
+    </a>
     <p class="nav-label settings-label">PREFERENCES</p>
     <a class="nav-link {% if request.path == '/settings' %}active{% endif %}" href="/settings">⚙ <span>School
         Settings</span></a>
